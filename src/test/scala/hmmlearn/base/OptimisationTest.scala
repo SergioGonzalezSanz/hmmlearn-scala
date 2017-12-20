@@ -86,4 +86,35 @@ class OptimisationTest extends FlatSpec with Matchers {
     Optimisation.logAddExp(0.5, Double.NegativeInfinity) shouldBe 0.5
   }
 
+  "viterbi" should "produce the right results" in {
+    val logStartProb = DenseVector(-0.69314718, -0.69314718)
+    val logTransMat = DenseMatrix(
+      (-0.35667494, -1.2039728),
+      (-1.2039728, -0.35667494)
+    )
+    val frameLogProb = DenseMatrix(
+      (-0.10536052, -1.6094379),
+      (-0.10536052, -1.6094379),
+      (-2.30258509, -0.22314355),
+      (-0.10536052, -1.6094379),
+      (-0.10536052, -1.6094379)
+    )
+
+    val (expectedLogProb, expectedStateSequence) = (-4.459028291034797, DenseVector(0, 0, 1, 0, 0))
+
+    val (actualStateSequence, actualLogProb) = Optimisation.viterbi(
+      nSamples = frameLogProb.rows,
+      nComponents = frameLogProb.cols,
+      logStartProb = logStartProb,
+      logTransMat = logTransMat,
+      frameLogProb = frameLogProb
+    )
+
+    round(actualLogProb) shouldBe round(expectedLogProb)
+    actualStateSequence shouldBe expectedStateSequence
+  }
+
+  def round(d : Double) : Double = {
+    (d * 10000).toInt / 10000.0
+  }
 }
